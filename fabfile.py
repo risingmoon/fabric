@@ -162,8 +162,34 @@ def _config_nginx():
         print "ERROR: no simple_nginx_config file!"
 
 
+def test():
+    from os import listdir
+    file_list = listdir("..")
+    print "fabric" in file_list
+    # for f in  file_list:
+    #     f + "\t"
+    # prompt_text = "Please type the folder name to sync:\n"
+    
+    # def validation(input):
+    #     if not choice in range(1, len(env.instances) + 1):
+    #         raise ValueError("%d is not a valide instance:" % choice)
+    #     return choice
+
+    # choice = prompt(prompt_text, validate=validation)
+
+
 def _rsync():
-    rsync_project('~', '.')
+    from os import listdir
+    file_list = listdir("..")
+    prompt_text = "Please type the folder name to sync:\n"
+
+    def validation(folder):
+        if not folder in file_list:
+            raise ValueError("%s is not this directory" % folder)
+        return folder
+
+    folder = prompt(prompt_text, validate=validation)
+    rsync_project('~', '../' + folder)
 
 
 def stop_instance():
@@ -177,7 +203,7 @@ def terminate_instance():
     env.active_instance.terminate()
     print env.active_instance.state
 
-
+   
 def select_instance(state='running'):
     if env.get('active_instance', False):
         return
