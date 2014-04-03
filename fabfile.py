@@ -183,7 +183,7 @@ def test():
 def _rsync():
     if not env.get('active_folder', False):
         select_folder()
-    # rsync_project('~', '../' + env.active_folder)
+    rsync_project('~', '../' + env.active_folder)
     rsync_project('~', 'config')
 
 
