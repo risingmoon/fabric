@@ -14,11 +14,11 @@ env.aws_region = 'us-west-2'
 
 env.hosts = ['localhost', ]
 
-
 def deploy():
     select_instance()
     sync_instance()
     install_all()
+
 
 def config_all():
     config_nginx()
@@ -45,7 +45,7 @@ def install_all():
 
 
 def pip_install():
-        run_command_on_selected_server(_pip_install)
+    run_command_on_selected_server(_pip_install)
 
 
 def pip_uninstall():
@@ -91,11 +91,13 @@ def sync_instance():
 
 
 def _pip_install():
-    sudo('pip install -r config/requirements.txt')
+    if not env.get('active_folder'):
+        select_folder()
+    sudo('pip install -r ' + env.active_folder + '/requirements.txt')
 
 
 def _pip_uninstall():
-    sudo('pip uninstall -r config/requirements.txt')
+    sudo('pip uninstall -r requirements.txt')
 
 
 def _install_packages():
@@ -179,17 +181,10 @@ def test():
 
 
 def _rsync():
-    from os import listdir
-    file_list = listdir("..")
-    prompt_text = "Please type the folder name to sync:\n"
-
-    def validation(folder):
-        if not folder in file_list:
-            raise ValueError("%s is not this directory" % folder)
-        return folder
-
-    folder = prompt(prompt_text, validate=validation)
-    rsync_project('~', '../' + folder)
+    if not env.get('active_folder', False):
+        select_folder()
+    # rsync_project('~', '../' + env.active_folder)
+    rsync_project('~', 'config')
 
 
 def stop_instance():
@@ -203,6 +198,21 @@ def terminate_instance():
     env.active_instance.terminate()
     print env.active_instance.state
 
+
+def select_folder():
+    if env.get('active_folder', False):
+        return
+    from os import listdir
+    file_list = listdir("..")
+    prompt_text = "Please type the folder name to sync:\n"
+
+    def validation(folder):
+        if not folder in file_list:
+            raise ValueError("%s is not in this local repository" % folder)
+        return folder
+
+    folder = prompt(prompt_text, validate=validation)
+    env.active_folder = folder
    
 def select_instance(state='running'):
     if env.get('active_instance', False):
